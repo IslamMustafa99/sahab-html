@@ -3,25 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Login</title>
 </head>
 <body>
-    <div>
-    <img src="rasel-logo.png" width="250"height="80">
+    <div id ="main">
+        <div class="login">
+    <img src="images/rasel-logo.png" width="150"height="50">
     <form>
-        <h3>البريد الإلكتروني </h3>
-        <input type="email" placeholder="يرجى إدخال البريد الالكتروني">
-        <h3>رقم الجوال</h3>
-        <input type="number" placeholder="يرجى إدخال رقم الجوال ">
-        <h3>كلمة المرور </h3>
-        <input type="password" placeholder="يرجى إدخال كلمة المرور">
-        <h3><a href=""> نسيت كلمة المرور</a> </h3>
+        <div class="register"><h2>تسجيل الدخول</h2></div>
+        <label>البريد الإلكتروني </label>
+        <input type="email" name="email" class="form-control" placeholder="يرجى إدخال البريد الإلكتروني " autocomplete="on">
 
-        <button class="login">تسجيل الدخول</button>
-        <h3><a href="">ليس لديك حساب؟ </a> </h3>
+       
+        <div class="group">
+            <label>رقم الجوال</label>
+            <input type="number" name="mobile_number" class="form-control" placeholder="يرجى إدخال رقم الجوال" autocomplete="off">
+        </div>
+        <div class="group">
+            <label> كلمة المرور</label>
+        <input type="password" name="password" class="form-control" placeholder="كلمة المرور " autocomplete="off">
+
+        </div>
+        
+        <div class="right"> <a href="#"> نسيت كلمة المرور </a> 
+        </div>
+
+        <button class="btn">تسجيل الدخول</button>
+        <div class="bottom">
+            <a href="#">ليس لديك حساب؟ </a> 
+        </div>
+        
 
 
     </form>
+        </div>
+        <div class="img2">
+            <img src="images/login-2.jpg" alt=""></div>
+
     </div>
 </body>
 </html>
