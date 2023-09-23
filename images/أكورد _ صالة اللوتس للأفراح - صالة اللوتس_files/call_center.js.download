@@ -1,0 +1,203 @@
+$(function () {
+    $("#call_center button[data-action='send']").click(function(event){
+        event.preventDefault();
+        store('اتصال', true);
+    });
+
+    $("#call_center input[name='mobile_number']").on('input', function () {
+        if(this.value.trim().length == 10){
+            store('اتصال', false);
+        }
+    });
+
+    $('#btn_subscribe_of_whatsapp_list_number').click(function(event){
+        event.preventDefault();
+        storeWhatsapp('قائمة الواتس أب');
+    });
+
+    $('#btn_submit_offer_1').click(function(event){
+        event.preventDefault();
+        var $this = $(this);
+        var mobile_number = $this.parent().find('input').val();
+
+        if(mobile_number.toString().length != 10){
+            swal({
+                title: "خطأ في رقم الجوال",
+                text: "يجب أن يتكون رقم الجوال من 10 أرقام",
+                type: "error",
+                icon: 'error',
+                timer: 1500,
+                buttons: false,
+            });
+        }else{
+            storeOffer('عرض أفراح مارس', mobile_number, $this);
+        }
+    });
+
+    $('#btn_submit_offer_2').click(function(event){
+        event.preventDefault();
+        var $this = $(this);
+        var mobile_number = $this.parent().find('input').val();
+
+        if(mobile_number.toString().length != 10){
+            swal({
+                title: "خطأ في رقم الجوال",
+                text: "يجب أن يتكون رقم الجوال من 10 أرقام",
+                type: "error",
+                icon: 'error',
+                timer: 1500,
+                buttons: false,
+            });
+        }else{
+            storeOffer('عرض الخطوبة', mobile_number, $this);
+        }
+    });
+
+    $('#btn_submit_offer_3').click(function(event){
+        event.preventDefault();
+        var $this = $(this);
+        var mobile_number = $this.parent().find('input').val();
+
+        if(mobile_number.toString().length != 10){
+            swal({
+                title: "خطأ في رقم الجوال",
+                text: "يجب أن يتكون رقم الجوال من 10 أرقام",
+                type: "error",
+                icon: 'error',
+                timer: 1500,
+                buttons: false,
+            });
+        }else{
+            storeOffer('عرض الأخوين', mobile_number, $this);
+        }
+    });
+
+    $('#btn_submit_offer_4').click(function(event){
+        event.preventDefault();
+        var $this = $(this);
+        var mobile_number = $this.parent().find('input').val();
+
+        if(mobile_number.toString().length != 10){
+            swal({
+                title: "خطأ في رقم الجوال",
+                text: "يجب أن يتكون رقم الجوال من 10 أرقام",
+                type: "error",
+                icon: 'error',
+                timer: 1500,
+                buttons: false,
+            });
+        }else{
+            storeOffer('عروض نهاية العام', mobile_number, $this);
+        }
+    });
+
+    function store(type, btn_click = false){
+        var posted_data = {
+            _token: $("meta[name='csrf-token']").attr("content"),
+            mobile_number: $("input[name='mobile_number']").val(),
+            name: $("input[name='name']").val(),
+            type: type,
+            btn_click: btn_click
+        };
+
+        var button = $("#call_center button[data-action='send']");
+        $(button).attr('disabled', true);
+        $(button).html('جاري التحميل...');
+
+        $.post($("meta[name='BASE_URL']").attr("content") + "/call_center", posted_data, function(response, status){
+            if(response.data){
+                $("#call_center input[name='name']").val("أهلاً وسهلاً " + response.data);
+                $("#call_center input[name='name']").prop('disabled', true);
+                $("#call_center .btn-send-mobile-number").remove();
+                $("#call_center .btn-login").removeClass('d-none');
+            }else{
+                swal({
+                    title: "تمت العملية بنجاح",
+                    text: response.message,
+                    type: "success",
+                    icon: 'success',
+                    timer: 1000,
+                    buttons: false,
+                });
+            }
+        })
+        .fail(function(response) {
+            if(response.status == 402){
+
+            }else{
+                $('#notLoginModal').modal('show');
+                $('#notLoginModal .modal-body .text').html(response.responseJSON.message);
+                $('#notLoginModal .register').remove();
+            }
+        })
+        .always(function() {
+            $(button).attr('disabled', false);
+            $(button).html('ارسال');
+        });
+    }
+
+    function storeWhatsapp(type){
+        var posted_data = {
+            _token: $("meta[name='csrf-token']").attr("content"),
+            whatsapp_number: $('#whatsapp_number').val(),
+            type: type,
+            name: 'whatsapp'
+        };
+
+        var button = $("#btn_subscribe_of_whatsapp_list_number");
+        $(button).attr('disabled', true);
+        $(button).html('جاري التحميل...');
+
+        $.post($("meta[name='BASE_URL']").attr("content") + "/call_center", posted_data, function(response, status){
+            swal({
+                title: "تمت العملية بنجاح",
+                text: 'شكرا لإنضمامك إلى قائمة الواتس أب',
+                type: "success",
+                icon: 'success',
+                timer: 1000,
+                buttons: false,
+            });
+
+            $('#whatsapp_number').val('');
+        })
+        .fail(function(response) {
+            http.fail(response.responseJSON, true);
+        })
+        .always(function() {
+            $(button).attr('disabled', false);
+            $(button).html('الاشتراك');
+        });
+    }
+
+    function storeOffer(type, mobile_number, button){
+        var posted_data = {
+            _token: $("meta[name='csrf-token']").attr("content"),
+            type: type,
+            mobile_number: mobile_number,
+            name: '-'
+        };
+
+        var button = button;
+        $(button).attr('disabled', true);
+        $(button).html('جاري التحميل...');
+
+        $.post($("meta[name='BASE_URL']").attr("content") + "/call_center/offer", posted_data, function(response, status){
+            swal({
+                text: "تمت العملية بنجاح",
+                type: "success",
+                icon: 'success',
+                timer: 1500,
+                buttons: false,
+            });
+
+            button.parent().find('input').val('');
+        })
+        .fail(function(response) {
+            http.fail(response.responseJSON, true);
+        })
+        .always(function() {
+            $(button).attr('disabled', false);
+            $(button).html('موافق');
+        });
+    }
+});

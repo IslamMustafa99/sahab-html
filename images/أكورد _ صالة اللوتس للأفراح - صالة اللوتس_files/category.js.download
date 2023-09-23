@@ -1,0 +1,99 @@
+var $categoryTemplate = $('#website_categories [categories]').clone();
+$('#website_categories [categories]').html('');
+
+var Category = {
+    categories: [],
+    xhr: {
+        get_categories: null,
+        get_categories_with_out_children: null,
+    },
+
+    getCategories: function(){
+        if (Category.xhr.get_categories) Category.xhr.get_categories.abort();
+
+        Category.xhr.get_categories = $.get($("meta[name='BASE_URL']").attr("content")  + '/categories/data', function (response) {
+
+            $('#website_categories [categories]').html('');
+            var categories = '';
+
+            $(response.data).each(function () {
+                Category.categories.push(this);
+                categories += Category.getCategoryHTML(this);
+
+                // if(this.all_children_categories.length){
+                //     $(this.all_children_categories).each(function () {
+                //         Category.categories.push(this);
+                //         categories += Category.getCategoryHTML(this, true);
+                //     });
+                // }
+            });
+
+            $('#website_categories [categories]').append(categories);
+        });
+    },
+
+    getCategoryHTML: function(category, child = false){
+        var $category = $categoryTemplate.clone();
+
+        if(!child){
+            $category.find('[data-source="category_name"]').html(category.name);
+            $category.find('[data-source="category_name"]').attr('data-id', category.id);
+            if(category.id == 1 || category.id == 2 || category.id == 3){
+                $category.find('[data-source="category_name"]').addClass('checked');
+            }
+        }else{
+            $category.find('[data-source="child_category_name"]').html(category.name);
+            $category.find('[data-source="child_category_name"]').attr('data-id', category.id);
+            $category.find('[data-source="category_name"]').attr('href', $("meta[name='BASE_URL']").attr("content")  + `/search?category_id=${category.parent_category_id}&child_id=${category.id}`);
+        }
+
+        if(category.id == 248){
+            $category.find('[data-source="category_name"]').html("مفروشات");
+        }
+
+        return $category.html();
+    },
+
+    appendChildrenCateogriesHtml: function($this){
+        if($this.hasClass('checked')){
+
+            $this.closest('[category]').find('[data-source="direction"]').html('<i class="fa fa-angle-double-up"></i> ');
+
+            var category_id = $this.attr('data-id');
+            var children = Category.categories.find(x => x.id == category_id).all_children_categories;
+
+            var htmlDiv = '';
+
+            $.each(children, function (index, value) {
+                htmlDiv += `<div class="col-md-4">
+                                <a class="dropdown-item child" href="/search?category_id=${value.parent_category_id}&child_id=${value.id}" data-id="${value.id}">${value.name}</a>
+                            </div>`;
+            });
+
+            $this.closest('[category]').find('[children]').append(htmlDiv);
+        }
+    }
+}
+
+$(function () {
+    Category.getCategories();
+
+    setTimeout(function(){
+        $('#website_categories').find('[category]').each(function( index ){
+
+            var $this = $(this).find('[data-source="category_name"]');
+            Category.appendChildrenCateogriesHtml($this);
+        });
+    }, 1000);
+
+    $('#website_categories').on('click', '[data-action="getChildrenCategory"]', function(event){
+        event.stopPropagation();
+
+        if(!$(this).hasClass('checked')){
+            $(this).addClass('checked');
+
+            var $this = $(this);
+            Category.appendChildrenCateogriesHtml($this);
+        }
+    });
+});

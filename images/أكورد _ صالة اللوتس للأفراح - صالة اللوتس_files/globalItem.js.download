@@ -1,0 +1,622 @@
+var Gloabl = {
+    getItemHtmlDataSource: function(item, $item){
+
+        var item_id = item.id;
+        var price_name = item.name;
+        var item_name = item.product ? item.product.name : item.product_name;
+        var is_saved_price = item.is_saved_price;
+        var category_name = item.product ? item.product.category.name : item.category_name;
+        var parent_category_name = item.product && item.product.category && item.product.category.category ? item.product.category.category.name : item.parent_category_name;
+        var category_id = item.product ? item.product.category.id : item.category_id;
+        var parent_category_id = item.product ? item.product.category.parent_category_id : item.parent_category_id;
+        var supplier_id = item.product ? item.product.supplier.id : item.supplier_id;
+        var supplier_name = item.product ? item.product.supplier.name : item.supplier_name;
+
+        var selling_price = item.selling_price;
+        var original_price = item.original_price;
+
+        var item_product_image_0 = (item.product ? item.product.images_order_by_view_order[0] : (item.media && item.media.length ? item.media[0] : ''));
+
+        var item_out_of_stock = item.out_of_stock;
+        // var supplier_image = item.product.supplier.media;
+        // var supplier_image_0 = item.product.supplier.media[0];
+
+        var item_description = item.product ? item.product.description : item.product_description;
+
+        var item_attributes_length = item.attributes.length;
+        var item_attributes = item.attributes;
+
+        $item.find('[data-source="item_id"]').attr('data-id', item_id);
+        $item.find('[data-source="item_id"]').attr('data-out-of-stock', item_out_of_stock);
+        $item.find('[data-source="item_id"]').attr('href', $("meta[name='BASE_URL']").attr("content") + `/products/${item_id}`);
+
+        $item.find('[data-source="wishlist_item"]').attr('data-id', item_id);
+
+        if(is_saved_price){
+            $item.find('[data-source="wishlist_item"] use').addClass('is_saved');
+        }
+
+        $item.find('[data-source="category_name"]').html(category_name);
+
+        if(parent_category_id == 248){
+            $item.find('[data-source="parent_category_name"]').html('مفروشات');
+        }else{
+            $item.find('[data-source="parent_category_name"]').html(parent_category_name);
+        }
+
+        if(price_name){
+            $item.find('[data-source="price_name"]').removeClass('d-none');
+            $item.find('[data-source="price_name"]').html(price_name);
+        }
+
+        $item.find('[data-source="parent_category_id"]').attr('data-id', parent_category_id);
+        $item.find('[data-source="parent_category_id"]').attr('href', $("meta[name='BASE_URL']").attr("content") + `/search?category_id=${parent_category_id}`);
+
+        $item.find('[data-source="category_id"]').attr('data-id', category_id);
+        $item.find('[data-source="category_id"]').attr('href', $("meta[name='BASE_URL']").attr("content") + `/search?category_id=${parent_category_id}&child_id=${category_id}`);
+
+        $item.find('[data-source="item_name"]').html(item_name);
+
+        $item.find('[data-source="supplier_id"]').attr('data-id', supplier_id);
+        $item.find('[data-source="supplier_id"]').attr('href', $("meta[name='BASE_URL']").attr("content") + `/suppliers/${supplier_id}`);
+
+        $item.find('[data-source="supplier_name"]').html(" ( " + supplier_name + " ) ");
+
+        // صالات = 3، كوافير = 5، مطابخ = 10، فنادق = 11، بدل الزفاف = 2
+        if(parent_category_id == 3 || parent_category_id == 4 || parent_category_id == 5 || parent_category_id == 10 || parent_category_id == 11 || parent_category_id == 7 || parent_category_id == 9 || parent_category_id == 13){
+            $item.find('[data-source="supplier_id"]').removeClass('d-none');
+        }
+
+        if(selling_price == null){
+            selling_price = 0;
+        }
+
+        $item.find('[data-source="price"]').html("₪" + selling_price);
+        $item.find('[data-source="original_price"]').html("₪" + original_price);
+
+        var discount = 100 - ((selling_price / original_price) * 100);
+
+        $item.find('[data-source="discount"]').html('%' + discount.toFixed(1));
+
+        if (selling_price >= original_price && original_price != null) {
+            $item.find('.discount-original-price').remove();
+            $item.find('[data-source="discount"]').remove();
+            $item.find('[data-source="original_price"]').remove();
+        }
+
+        if(item_product_image_0){
+            var array_ex = item_product_image_0.file_name.split(".");
+
+            var image_url = $("meta[name='WEBSITE_DOMAIN']").attr("content") + `/storage/app/public/${item_product_image_0.id}/conversions/${array_ex[0]}-thumb.jpg`;
+
+            if(array_ex[2]){
+                image_url = $("meta[name='WEBSITE_DOMAIN']").attr("content") + `/storage/app/public/${item_product_image_0.id}/conversions/${array_ex[0]}.${array_ex[1]}.${array_ex[2]}-thumb.jpg`;
+            }
+
+            $item.find('[data-source="image"]').css('background-image', 'url("' + image_url + '")');
+        }
+
+        if(item_out_of_stock){
+            $item.find('[data-source="out_of_stock"]').removeClass('d-none');
+        }
+
+        // if ((parent_category_id == 10) || (parent_category_id == 5)) { // المطابخ = 10 ، الكوافيرات = 5
+
+        //     if(supplier_image){
+        //         if(supplier_image_0){
+        //             var array_ex = supplier_image_0.file_name.split(".");
+
+        //             var image_url = $("meta[name='WEBSITE_DOMAIN']").attr("content") + `/storage/app/public/${supplier_image_0.id}/conversions/${array_ex[0]}-thumb.jpg`;
+
+        //             if(array_ex[2]){
+        //                 image_url = $("meta[name='WEBSITE_DOMAIN']").attr("content") + `/storage/app/public/${supplier_image_0.id}/conversions/${array_ex[0]}.${array_ex[1]}.${array_ex[2]}-thumb.jpg`;
+        //             }
+
+        //             $item.find('[data-source="image"]').css('background-image', 'url(' + image_url + ')');
+        //         }
+        //     }
+        // }
+
+        if (parent_category_id == 8) { // 8 = تأجير الباصات
+            $item.find('[data-source="name"]').html(price_name);
+        }
+
+        if (parent_category_id == 14) { // 8 = المسارح
+            $item.find('[data-source="name"]').html(price_name);
+        }
+
+        // بدل الزفاف = 4 ، بطاقات الأفراح = 6
+        if (parent_category_id == 4 || parent_category_id == 6 || parent_category_id == 13) {
+            $item.find('[data-source="description"]').append(item_description);
+        }
+
+        var number_attributes = item_attributes_length;
+
+        if (item_attributes && category_id == 96) { //  غرفة نوم = 96
+            var divHtmlAttributesArray = [];
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.type.name == 'نوع الخشب' && attribute.value != '') {
+                    divHtmlAttributesArray[0] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'بلد المنشأ' && attribute.value != '') {
+                    divHtmlAttributesArray[1] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'نوع القشرة' && attribute.value != '') {
+                    divHtmlAttributesArray[2] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'نوع الدهان' && attribute.value != '') {
+                    divHtmlAttributesArray[3] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'عدد القطع' && attribute.value != '') {
+                    divHtmlAttributesArray[4] = `<span>${attribute.value}، </span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributesArray);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && category_id == 229) { // أطقم كنب = 229
+            var divHtmlAttributesArray = [];
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.value != '') {
+                    divHtmlAttributesArray[index] = `<span>${attribute.value}، </span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributesArray);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && category_id == 240) { // فرشات نوم = 240
+            var divHtmlAttributesArray = [];
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.value != '' || attribute.value != '0') {
+                    if(attribute.type.name == 'ضغط الاسفنج'){
+                        divHtmlAttributesArray[index] = `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                        return;
+                    }
+                    divHtmlAttributesArray[index] = `<span>${attribute.value}، </span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributesArray);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && (category_id == 199 || category_id == 130)) { // مسكة عروس = 199، تزيين سيارات = 130
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'نوع الورد') {
+                    divHtmlAttributes += `<span>ورد ${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'حجم المسكة') {
+                    divHtmlAttributes += `<span>حجم ${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'حجم بوكيه الورد') {
+                    divHtmlAttributes += `<span>حجم ${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'آلية البيع') {
+                    divHtmlAttributes += `<span>${attribute.value} ،</span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && category_id == 222) { // تزيين أماكن أفراح = 222
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'كوشة' && attribute.value == 'متوفر') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ،</span>`;
+                }
+
+                if (index == 2) {
+                    divHtmlAttributes += `<span>${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'دانس فلور' && attribute.value == 'متوفر') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ،</span>`;
+                }
+
+                if (attribute.type.name == 'دي جي' && attribute.value == 'متوفر') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ،</span>`;
+                }
+
+                if (attribute.type.name == 'ليزر' && attribute.value == 'متوفر') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ،</span>`;
+                }
+
+                if (attribute.type.name == 'عدد الإضاءات' && attribute.value != 0) {
+                    divHtmlAttributes += `<span>${attribute.type.name} = ${attribute.value} ...</span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+        }
+
+        if (item_attributes && parent_category_id == 10 || item_attributes && parent_category_id == 278) { // مطابخ
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+                var comma = '';
+                if (index + 1 != number_attributes) {
+                    comma = '، ';
+                }
+
+                divHtmlAttributes += `<span>${attribute.value} ${comma}</span>`;
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+        }
+
+        if (item_attributes && parent_category_id == 8) { // 8 = تأجير الباصات
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+                var comma = '';
+                if (index + 1 != number_attributes) {
+                    comma = '، ';
+                }
+
+                var value = attribute.value;
+                if (attribute.type.name == 'التكييف') {
+                    value = 'مكيّف';
+                }
+
+                if (attribute.type.name == 'سنة الإصدار') {
+                    return;
+                }
+                divHtmlAttributes += `<span>${value} ${comma}</span>`;
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+        }
+
+        if (item_attributes && parent_category_id == 14) { // 8 = المسارح
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'عدد الكراسي' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'دي جي' && attribute.value == 'متوفر') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ،</span>`;
+                }
+
+                if (attribute.type.name == 'أبعاد المسرح' && attribute.value != '') {
+                    divHtmlAttributes += `<span> ${attribute.type.name} ${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'ممر الإضاءة' && attribute.value == 'متوفر') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ،</span>`;
+                }
+
+                if (attribute.type.name == 'طول ممر الإضاءة' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} ،</span>`;
+                }
+
+                if (attribute.type.name == 'جسر' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} ،</span>`;
+                }
+
+            });
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+        }
+
+        // استيديوهات التصوير
+        if (item_attributes && category_id == 236) { // تصوير فوتو داخلي
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'عدد الصور' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} صور، </span>`;
+                }
+
+                if (attribute.type.name == 'ألبوم صور' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'مقاس الصور' && attribute.value != '') {
+                    divHtmlAttributes += `<span>مقاس الصورة ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'برومو' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'فوتوبوك' && attribute.value != 'غير متوفر' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'عدد صور الفوتوبوك' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && category_id == 237) { // تصوير فوتو خارجي
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'عدد الصور' && attribute.value != '') {
+                    divHtmlAttributes += `<span>الصور ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'ألبوم صور' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'برومو' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'فوتوبوك' && attribute.value != 'غير متوفر' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'عدد صور الفوتوبوك' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'مدة الجلسة' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+            });
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && category_id == 238) { // تصوير فيديو
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'عدد كاميرات الفيديو' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} كاميرا فيديو، </span>`;
+                }
+
+                if (attribute.type.name == 'عدد كاميرات الفوتو' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} كاميرا فوتو، </span>`;
+                }
+
+                if (attribute.type.name == 'ألبوم صور' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'كرين' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'مونتاج' && attribute.value != 'غير متوفر' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'طباعة ألبوم الصور' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+
+                if (attribute.type.name == 'تصوير طائرة' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+            });
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if (item_attributes && category_id == 239) { // ملحقات
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+
+                if (attribute.type.name == 'عدد الصور' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.value} صور، </span>`;
+                }
+
+                if (attribute.type.name == 'مقاس الصور' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'فوتوبوك' && attribute.value != 'غير متوفر' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'عدد صور الفوتوبوك' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name} ${attribute.value}، </span>`;
+                }
+            });
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        // الكوافيرات = 5
+        if (item_attributes && parent_category_id == 5) {
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.value != 'غير متوفر' && attribute.value != '') {
+                    divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        // الصالات  = 3
+        if (item_attributes && parent_category_id == 3) {
+            var divHtmlAttributesArray = [];
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.type.name == 'من شهر' && attribute.value != '') {
+                    divHtmlAttributesArray[0] = `<span>من شهر ${attribute.value} </span>`;
+                }
+
+                if (attribute.type.name == 'إلى شهر' && attribute.value != '') {
+                    divHtmlAttributesArray[0] += `<span>إلى شهر ${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'المحافظة' && attribute.value != '') {
+                    divHtmlAttributesArray[1] = `<span>${attribute.value}، </span>`;
+                }
+
+                if (attribute.type.name == 'التكييف' && attribute.value == 'متوفر') {
+                    divHtmlAttributesArray[2] = `<span>مكيَف، </span>`;
+                }
+
+                if (attribute.type.name == 'عدد الكراسي' && attribute.value != '') {
+                    divHtmlAttributesArray[3] = `<span>${attribute.value} كرسي، </span>`;
+                }
+
+                if (attribute.type.name == 'عدد الطاولات' && attribute.value != '') {
+                    if(attribute.value == 'حسب الطلب'){
+                        divHtmlAttributesArray[4] = `<span> الطاولة ${attribute.value}، </span>`;
+                    }else{
+                        divHtmlAttributesArray[4] = `<span>${attribute.value} طاولة، </span>`;
+                    }
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributesArray);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        // بدل عريس = 16
+        if (item_attributes && parent_category_id == 16) {
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+                divHtmlAttributes += `<span>${attribute.value}، </span>`;
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        //  الأجهزة الكهربائية = 2
+        if (item_attributes && parent_category_id == 2) {
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.value != 'غير متوفر' && attribute.value != 'لا يشمل' && attribute.value != '') {
+                    if (attribute.type.name == 'الضمان' && attribute.value == 'متوفر') {
+                        divHtmlAttributes += `<span>شامل الضمان، </span>`;
+                        return;
+                    }
+
+                    if (attribute.type.name == 'الطاقة' && attribute.value == 'موفر') {
+                        divHtmlAttributes += `<span>موفر للطاقة، </span>`;
+                        return;
+                    }
+
+                    if (attribute.type.name == 'القدرة' && attribute.value != '') {
+                        divHtmlAttributes += `<span>${attribute.value}، </span>`;
+                        return;
+                    }
+
+                    if (attribute.type.name == 'شاشة لمس' && attribute.value != '') {
+                        divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+                        return;
+                    }
+
+                    if (attribute.value != '') {
+                        divHtmlAttributes += `<span>${attribute.value}، </span>`;
+                    }
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        if(item_attributes && (parent_category_id == 245 || category_id == 245)){
+            var divHtmlAttributes = '';
+            $.each(item_attributes, function (index, attribute) {
+                if(attribute.type.name == 'عدد الأشخاص'){
+                    divHtmlAttributes += `<span>كيك ${attribute.value}، </span>`;
+                    return;
+                }
+
+                if(attribute.type.name == 'نوع التغليف'){
+                    divHtmlAttributes += `<span>${attribute.value}، </span>`;
+                    return;
+                }
+
+                if(attribute.type.name == 'الأطعمة المتوفرة'){
+                    divHtmlAttributes += `<span>${attribute.value}، </span>`;
+                    return;
+                }
+
+                divHtmlAttributes += `<span>${attribute.type.name}، </span>`;
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributes);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+
+            if($.trim(price_name) != ''){
+                $item.find('[data-source="name"]').html(price_name);
+            }
+        }
+
+        if (item_attributes && parent_category_id == 11) { //  الفنادق = 11
+            var divHtmlAttributesArray = [];
+            $.each(item_attributes, function (index, attribute) {
+                if (attribute.type.name == 'نوع الغرفة' && attribute.value != '') {
+                    divHtmlAttributesArray[0] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'مدة الحجز' && attribute.value != '') {
+                    divHtmlAttributesArray[1] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'الإطلالة' && attribute.value != '') {
+                    divHtmlAttributesArray[2] = `<span>${attribute.value}، </span>`;
+                }
+                if (attribute.type.name == 'وجبة إفطار' && attribute.value != '' && attribute.value != 'غير متوفر') {
+                    divHtmlAttributesArray[3] = `<span>${attribute.type.name}، </span>`;
+                }
+                if (attribute.type.name == 'وجبة غداء' && attribute.value != '' && attribute.value != 'غير متوفر') {
+                    divHtmlAttributesArray[4] = `<span>${attribute.type.name}، </span>`;
+                }
+                if (attribute.type.name == 'وجبة عشاء' && attribute.value != '' && attribute.value != 'غير متوفر') {
+                    divHtmlAttributesArray[5] = `<span>${attribute.type.name}، </span>`;
+                }
+            });
+
+            $item.find('[data-source="description"]').append(divHtmlAttributesArray);
+            var str = $item.find('[data-source="description"]').find('span').last().text();
+            $item.find('[data-source="description"]').find('span').last().text(str.slice(0, -2));
+        }
+
+        let isMobile = window.matchMedia("only screen and (max-width: 760px)").matches;
+        if (isMobile) {
+            $('.a-item-name').parent().removeClass('d-flex');
+        }
+    },
+
+    openLoading: function(){
+        $('#loading_page').removeClass('d-none');
+        $('[main]').css('opacity', '0.1');
+    },
+
+    closeLoading: function(){
+        $('#loading_page').addClass('d-none');
+        $('[main]').css('opacity', '1');
+    }
+}

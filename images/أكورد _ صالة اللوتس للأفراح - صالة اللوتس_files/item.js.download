@@ -1,0 +1,237 @@
+
+var $itemTemplate = $('[items]').clone();
+$('[items]').html('');
+
+var category_id = $('.section-item').attr('data-category-id');
+var item_id = $('.section-item').attr('data-id');
+var supplier_id = $('.section-item').attr('data-supplier-id');
+
+if($('.item-details .btn-cart .cart').hasClass('item_added_to_cart')){
+    $('.item-details .btn-cart .cart .text-add-to-cart').html('تمت الإضافة');
+}
+
+var Item = {
+    other_items: [],
+    other_items_per_page: 0,
+    other_items_total: 0,
+    xhr: {
+        get_other_items: null
+    },
+
+    getOtherItems: function(page_number){
+        if (Item.xhr.get_other_items) Item.xhr.get_other_items.abort();
+
+        Item.xhr.get_other_items = $.get($("meta[name='BASE_URL']").attr("content")  + `/suppliers/${supplier_id}/other_items?price_id=${item_id}&page=${page_number}`, function (response) {
+
+            Item.other_items_per_page = response.data.per_page;
+            Item.other_items_total = response.data.total;
+
+            $('[items]').html('');
+            var items = '';
+
+            $(response.data.data).each(function () {
+                Item.other_items.push(this);
+                items += Item.getItemHtml(this);
+            });
+
+            $('#other_items_counter_paganitaion').html("تم عرض " + response.data.to + " صنف من " + response.data.total + " صنف");
+            $('#other_items_counter_paganitaion_mobile').html("تم عرض " + response.data.to + " صنف من " + response.data.total + " صنف");
+
+            $('[items]').append(items);
+        });
+    },
+
+    getItemHtml: function(item){
+        var $item = $itemTemplate.clone();
+        Gloabl.getItemHtmlDataSource(item, $item);
+        return $item.html();
+    },
+
+    getAdvertising: function(){
+        if(localStorage.getItem('advertising-home-item') == null){
+            localStorage.setItem('advertising-home-item', 1);
+        }
+
+        if(localStorage.getItem('advertising-home-item') == 1){
+            $('.advertising-home-1').removeClass('d-none');
+            localStorage.setItem('advertising-home-item', 2);
+        }
+        else if(localStorage.getItem('advertising-home-item') == 2){
+            $('.advertising-home-2').removeClass('d-none');
+            localStorage.setItem('advertising-home-item', 3);
+        }
+        else if(localStorage.getItem('advertising-home-item') == 3){
+            $('.advertising-home-3').removeClass('d-none');
+            localStorage.setItem('advertising-home-item', 1);
+        }
+
+        if(localStorage.getItem('advertising-wedding-item') == null){
+            localStorage.setItem('advertising-wedding-item', 1);
+        }
+
+        if(localStorage.getItem('advertising-wedding-item') == 1){
+            $('.advertising-wedding-1').removeClass('d-none');
+            localStorage.setItem('advertising-wedding-item', 2);
+        }
+        else if(localStorage.getItem('advertising-wedding-item') == 2){
+            $('.advertising-wedding-2').removeClass('d-none');
+            localStorage.setItem('advertising-wedding-item', 3);
+        }
+        else if(localStorage.getItem('advertising-wedding-item') == 3){
+            $('.advertising-wedding-3').removeClass('d-none');
+            localStorage.setItem('advertising-wedding-item', 4);
+        }
+        else if(localStorage.getItem('advertising-wedding-item') == 4){
+            $('.advertising-wedding-4').removeClass('d-none');
+            localStorage.setItem('advertising-wedding-item', 1);
+        }
+    },
+}
+
+if(category_id == 1 || category_id == 2 || category_id == 248){
+    $('.section-item .advertising-wedding').removeClass('d-none');
+}else{
+    $('.section-item .advertising-home').removeClass('d-none');
+}
+
+$(function() {
+
+    Item.getOtherItems(1);
+    Item.getAdvertising();
+
+    $('.social a').tooltip({
+        placement: "right",
+        container: 'body'
+    });
+
+    $('#carouselExampleIndicators').on('click', '[data-action="full-screen-image"]', function (event) {
+        $('.image-item[data-enlargeable]').addClass('img-enlargeable').click(function () {
+            var src = $(this).css('background-image');
+            src = src.replace('url(','').replace(')','').replace(/\"/gi, "");
+            var modal;
+
+            function removeModal() {
+                modal.remove();
+                $('body').off('keyup.modal-close');
+            }
+
+            if (!$('body .full-screen-image').hasClass('active')) {
+                modal = $('<div class="full-screen-image active">').css({
+                    background: 'RGBA(0,0,0,.5) url(' + src + ') no-repeat center',
+                    backgroundSize: 'contain',
+                    width: '100%',
+                    height: '100%',
+                    position: 'fixed',
+                    zIndex: '10000',
+                    top: '0',
+                    left: '0',
+                    cursor: 'zoom-out'
+                }).click(function () {
+                    removeModal();
+                }).appendTo('body');
+            }
+
+            //handling ESC
+            $('body').on('keyup.modal-close', function (e) {
+                if (e.key === 'Escape') {
+                    removeModal();
+                }
+            });
+        });
+    });
+
+    $('.item').on('click', '[data-action="wishlist-item"]', function(){
+        var $this = $(this);
+
+        if(!$this.attr('data-auth-id')){
+            $('#notLoginModal').modal('show');
+        }else{
+
+            var posted_data = {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                price_id: $this.attr('data-id'),
+            };
+
+            $.post($("meta[name='BASE_URL']").attr("content") + '/wishlist', posted_data, function (response) {
+                if($this.find('.fa-heart').hasClass('is_saved')){
+                    $this.find('.fa-heart').removeClass('is_saved');
+                }else{
+                    $this.find('.fa-heart').addClass('is_saved');
+                }
+            })
+            .fail(function (response) {
+                http.fail(response.responseJSON, true);
+            });
+        }
+    });
+
+    $('.item').on('click', '[data-action="cart-item"]', function(){
+        var $this = $(this);
+
+        if($('.item-details .btn-cart .cart').hasClass('item_added_to_cart')){
+            swal({
+                title: "لقد تم إضافة هذا الصنف إلى السلة مسبقاً",
+                type: "warning",
+                icon: 'warning',
+                timer: 1000,
+                buttons: false,
+            });
+
+            return;
+        }
+
+        if(!$this.attr('data-auth-id')){
+            $('#notLoginModal').modal('show');
+        }
+        else if($this.attr('data-out-of-stock') == 1){
+            $('#outOfStockModal').modal('show');
+        }
+        else{
+
+            var posted_data = {
+                _token: $("meta[name='csrf-token']").attr("content"),
+                price_id: $this.attr('data-id'),
+            };
+
+            $.post($("meta[name='BASE_URL']").attr("content") + '/cart', posted_data, function (response) {
+                swal({
+                    title: "تمت العملية بنجاح",
+                    text: response.message,
+                    type: "success",
+                    icon: 'success',
+                    timer: 1000,
+                    buttons: false,
+                });
+
+                $('.item-details .btn-cart .cart').addClass('item_added_to_cart');
+                $('.item-details .btn-cart .cart .text-add-to-cart').html('تمت الإضافة');
+
+                $.get($("meta[name='BASE_URL']").attr("content") + "/cart/number_of_items", function(response){
+                    $('#number_of_items_in_cart').html(response);
+                });
+            })
+            .fail(function (response) {
+                http.fail(response.responseJSON, true);
+            });
+        }
+    });
+
+    $('.btn-share').click(function(){
+        $('.social-menu ul').css('display', 'flex');
+    });
+
+    $('.remove-share').click(function(){
+        $('.social-menu ul').css('display', 'none');
+    });
+
+    $('.social-menu .fa-share-alt').click(function(){
+        var $this = $(this);
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($this.attr('data-href')).select();
+        document.execCommand("copy");
+        $temp.remove();
+
+        alert("تم نسخ الرابط بنجاح")
+    });
+});
