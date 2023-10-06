@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/' , 'App\Http\Controllers\WebsiteController@index_page')->name('index_page');
+Route::get('/search' , 'App\Http\Controllers\WebsiteController@search_page')->name('search_page');
+
+Route::get('/product/{id}' , 'App\Http\Controllers\WebsiteController@product_page')->name('product_page');
+
+
